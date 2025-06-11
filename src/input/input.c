@@ -21,7 +21,7 @@
 #define AND_SEPARATOR = 1
 #define OR_SEPARATOR = 2
 
-volatile sig_atomic_t sigint_received = 0;
+volatile sig_atomic_t cshr_sigint_received = 0;
 extern History *history;
 
 void init_input_buffer(InputBuffer *inputBuffer) {
@@ -141,11 +141,11 @@ char *cshr_read_input() {
         int current_char = getchar();
 
         // If SIG_INT is captured, clear the buffer and redraw
-        if (sigint_received) {
+        if (cshr_sigint_received) {
             memset(inputBuffer.buffer, 0, inputBuffer.buffer_size);
             inputBuffer.length = 0;
             inputBuffer.cursor_position = 0;
-            sigint_received = 0;
+            cshr_sigint_received = 0;
             redraw_line(&inputBuffer);
             continue;
         }
