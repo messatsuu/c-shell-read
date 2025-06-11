@@ -49,7 +49,7 @@ void set_autocomplete_entries_directory(AutocompleteResult *autocompleteResult, 
 void autocomplete_path(AutocompleteResult *autocompleteResult) {
     // If the path contains a slash, we check if it is a directory
     char *last_slash = strrchr(autocompleteResult->search_term, '/');
-    char *path = callocate(PATH_MAX, 1, true);
+    char *path = cshr_callocate(PATH_MAX, 1, true);
 
     if (last_slash != NULL) {
         unsigned int slash_position = last_slash - autocompleteResult->search_term + 1; // include the slash
@@ -72,7 +72,7 @@ void autocomplete_path(AutocompleteResult *autocompleteResult) {
 
 void set_search_term_from_input(InputBuffer *inputBuffer, AutocompleteResult *autocompleteResult) {
     unsigned int word_start_position = 0;
-    char *before_cursor_buffer = callocate(inputBuffer->cursor_position + 1, 1, true);
+    char *before_cursor_buffer = cshr_callocate(inputBuffer->cursor_position + 1, 1, true);
     strncpy(before_cursor_buffer, inputBuffer->buffer, inputBuffer->cursor_position);
     before_cursor_buffer[inputBuffer->cursor_position] = '\0';
 
@@ -84,7 +84,7 @@ void set_search_term_from_input(InputBuffer *inputBuffer, AutocompleteResult *au
     }
 
     autocompleteResult->search_term_length = (int)inputBuffer->cursor_position - (int)word_start_position;
-    autocompleteResult->search_term = allocate(autocompleteResult->search_term_length + 1, true);
+    autocompleteResult->search_term = cshr_allocate(autocompleteResult->search_term_length + 1, true);
     memcpy(autocompleteResult->search_term, &inputBuffer->buffer[word_start_position], autocompleteResult->search_term_length);
     autocompleteResult->search_term[autocompleteResult->search_term_length] = '\0';
     free(before_cursor_buffer);

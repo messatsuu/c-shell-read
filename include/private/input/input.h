@@ -17,6 +17,6 @@ typedef struct {
     unsigned int buffer_size;
 } InputBuffer;
 
-#endif
-
 void insert_into_buffer_at_cursor_position(InputBuffer *inputBuffer, char *string, unsigned int string_length);
+
+#endif

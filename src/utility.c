@@ -9,7 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 
-void log_error(const char *format, ...) {
+void cshr_log_error(const char *format, ...) {
     va_list args;
     va_start(args, format);
 
@@ -23,17 +23,17 @@ void log_error(const char *format, ...) {
     va_end(args);
 }
 
-noreturn void log_error_with_exit(const char *message) {
-    log_error(message);
+noreturn void cshr_log_error_with_exit(const char *message) {
+    cshr_log_error(message);
     exit(EXIT_FAILURE);
 }
 
-void *reallocate(void *pointer, size_t size, bool exit) {
+void *cshr_recshr_allocate(void *pointer, size_t size, bool exit) {
     void *reallocation_result = realloc(pointer, size);
     if (!reallocation_result) {
         free(pointer);
         if (exit) {
-            log_error_with_exit("Reallocation Error");
+            cshr_log_error_with_exit("Reallocation Error");
         }
         return NULL;
     }
@@ -42,14 +42,14 @@ void *reallocate(void *pointer, size_t size, bool exit) {
 }
 
 // Calls realloc() and initializes the added memory with calloc()
-void *reallocate_safe(void *pointer, unsigned int old_size, unsigned int new_size, bool exit) {
+void *cshr_reallocate_safe(void *pointer, unsigned int old_size, unsigned int new_size, bool exit) {
     void *reallocation_result = realloc(pointer, new_size);
     if (!reallocation_result) {
         free(pointer);
         if (exit) {
-            log_error_with_exit("Reallocation Error");
+            cshr_log_error_with_exit("Reallocation Error");
         } else {
-            log_error_with_exit("Reallocation Error");
+            cshr_log_error_with_exit("Reallocation Error");
         }
         return NULL;
     }
@@ -61,11 +61,11 @@ void *reallocate_safe(void *pointer, unsigned int old_size, unsigned int new_siz
     return reallocation_result;
 }
 
-void *allocate(size_t size, bool exit) {
+void *cshr_allocate(size_t size, bool exit) {
     void *allocation_result = malloc(size);
     if (!allocation_result) {
         if (exit) {
-            log_error_with_exit("Allocation Error");
+            cshr_log_error_with_exit("Allocation Error");
         }
         return NULL;
     }
@@ -73,11 +73,11 @@ void *allocate(size_t size, bool exit) {
     return allocation_result;
 }
 
-void *callocate(unsigned int number_of_bytes, size_t size, bool exit) {
+void *cshr_callocate(unsigned int number_of_bytes, size_t size, bool exit) {
     void *callocation_result = calloc(number_of_bytes, size);
     if (!callocation_result) {
         if (exit) {
-            log_error_with_exit("Zero-Value Allocation Error");
+            cshr_log_error_with_exit("Zero-Value Allocation Error");
         }
         return NULL;
     }
@@ -85,11 +85,7 @@ void *callocate(unsigned int number_of_bytes, size_t size, bool exit) {
     return callocation_result;
 }
 
-void cleanup() {
-    cleanup_history();
-}
-
 // Wrapper function to override in testing (statically linked glibc-functions cannot be overriden in github actions?)
-ssize_t get_host_name(char *name, size_t len) {
+ssize_t cshr_get_host_name(char *name, size_t len) {
     return gethostname(name, len);
 }

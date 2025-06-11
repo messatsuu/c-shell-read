@@ -13,15 +13,15 @@
 #define NORMAL "\033[0m"
 
 void init_autocomplete_result(AutocompleteResult *autocompleteResult) {
-    autocompleteResult->entries = allocate(INITIAL_BUFSIZE * sizeof(AutocompleteResultEntry *), true);
+    autocompleteResult->entries = cshr_allocate(INITIAL_BUFSIZE * sizeof(AutocompleteResultEntry *), true);
     autocompleteResult->count = 0;
     autocompleteResult->capacity = INITIAL_BUFSIZE;
 }
 
 void add_entry_to_autocomplete_result(AutocompleteResult *autocompleteResult, char* entry, enum AutocompleteResultEntryType entryType) {
-    autocompleteResult->entries[autocompleteResult->count] = allocate(sizeof(AutocompleteResultEntry), true);
+    autocompleteResult->entries[autocompleteResult->count] = cshr_allocate(sizeof(AutocompleteResultEntry), true);
 
-    char *new_entry = callocate(ENTRY_MAX, 1, true);
+    char *new_entry = cshr_callocate(ENTRY_MAX, 1, true);
     strncpy(new_entry, entry, strlen(entry));
     switch (entryType) {
         case RESULT_ENTRY_TYPE_DIR: {
@@ -46,7 +46,7 @@ void add_entry_to_autocomplete_result(AutocompleteResult *autocompleteResult, ch
 
 int reallocate_autocomplete_entries(AutocompleteResult *autocompleteResult, unsigned int entries_expansion_size) {
     autocompleteResult->capacity += entries_expansion_size;
-    autocompleteResult->entries = reallocate(autocompleteResult->entries, autocompleteResult->capacity * sizeof(char *), false);
+    autocompleteResult->entries = cshr_recshr_allocate(autocompleteResult->entries, autocompleteResult->capacity * sizeof(char *), false);
 
     if (!autocompleteResult->entries) {
         return -1;
@@ -104,7 +104,7 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
     }
 
     unsigned int buffer_size = INITIAL_BUFSIZE_BIG;
-    char *result_buffer = callocate(buffer_size, 1, true);
+    char *result_buffer = cshr_callocate(buffer_size, 1, true);
 
     unsigned terminal_column_count = get_terminal_columns_count();
     unsigned int longest_result_length = get_longest_autocomplete_result_length(autocompleteResult);
@@ -150,7 +150,7 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
         // If the size of all elements for the printout is bigger than the current `buffer_size`, reallocate
         if (strlen(result_buffer) + strlen(output_color) + strlen(current_autocomplete_result) + strlen(NORMAL) + spaces_to_print + 1 >= buffer_size) {
             buffer_size += BUF_EXPANSION_SIZE_BIG;
-            result_buffer = reallocate(result_buffer, buffer_size, true);
+            result_buffer = cshr_recshr_allocate(result_buffer, buffer_size, true);
         }
 
         // Put Entry into result-string

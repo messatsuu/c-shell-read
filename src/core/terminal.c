@@ -103,7 +103,7 @@ int get_terminal_columns_count() {
     struct winsize win_size;
 
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &win_size) == -1) {
-        log_error("Failed to get terminal columns");
+        cshr_log_error("Failed to get terminal columns");
         return -1;
     }
 

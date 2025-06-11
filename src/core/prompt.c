@@ -20,7 +20,7 @@ void set_env_field(char *special_field, size_t special_field_size, char *env_var
 }
 
 
-char *create_ps1() {
+char *get_prompt() {
     char *ps1 = getenv("PS1");
     memset(prompt, 0, 100);
 
@@ -77,7 +77,7 @@ char *create_ps1() {
                 break;
             }
             case 'h': {
-                get_host_name(special_field, sizeof(special_field));
+                cshr_get_host_name(special_field, sizeof(special_field));
                 break;
             }
             default:

@@ -1,9 +1,8 @@
 #ifndef PUBLIC_AUTOCOMPLETE_H
 #define PUBLIC_AUTOCOMPLETE_H
 
-#include "private/input/input.h"
-
-// Reads input from the user
-void autocomplete(InputBuffer *inputBuffer);
+#include "autocomplete.h"
+#include "history.h"
+#include "input.h"
 
 #endif

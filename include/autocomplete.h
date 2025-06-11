@@ -1,0 +1,4 @@
+#ifndef PUBLIC_AUTOCOMPLETE_H
+#define PUBLIC_AUTOCOMPLETE_H
+
+#endif

@@ -17,20 +17,20 @@ typedef struct {
 // Declare a global variable to store history
 History *history = NULL;
 
-int history_index = 0;
+int cshr_history_index = 0;
 
-void init_history(int initial_capacity) {
-    history = allocate(sizeof(History), true);
-    history->entries = allocate(initial_capacity * sizeof(char *), true);
+void cshr_history_init(int initial_capacity) {
+    history = cshr_allocate(sizeof(History), true);
+    history->entries = cshr_allocate(initial_capacity * sizeof(char *), true);
     history->count = 0;
     history->capacity = initial_capacity;
 
     if (!history->entries) {
-        log_error_with_exit("History Allocation Error");
+        cshr_log_error_with_exit("History Allocation Error");
     }
 }
 
-void cleanup_history() {
+void cshr_history_cleanup() {
     if (history == NULL) {
         return;
     }
@@ -43,10 +43,10 @@ void cleanup_history() {
     free(history);
 }
 
-void append_to_history(const char *command) {
+void chsr_history_append(const char *command) {
     if (history == NULL) {
         // On first call, we initialize the history-struct
-        init_history(HISTORY_BUFFER_SIZE);
+        cshr_history_init(HISTORY_BUFFER_SIZE);
     } else if (strcmp(history->entries[history->count - 1], command) == 0) {
         // Do not append to history if the previous entry is the same as the current one
         return;
@@ -55,22 +55,22 @@ void append_to_history(const char *command) {
     // If we reach the max capacity, reallocate the the entries buffer
     if (history->count >= history->capacity) {
         history->capacity += HISTORY_BUFFER_SIZE;
-        history->entries = reallocate(history->entries, (history->capacity) * sizeof(char*), true);
+        history->entries = cshr_recshr_allocate(history->entries, (history->capacity) * sizeof(char*), true);
     }
 
     // TODO: instead of using strdup, make sure that the original command is not
     history->entries[history->count] = strdup(command);
     if (!history->entries[history->count]) {
-        log_error_with_exit("Copying command string to buffer failed");
+        cshr_log_error_with_exit("Copying command string to buffer failed");
     }
 
     history->count++;
 }
 
-char* get_command_from_history(const unsigned long index) {
+char* cshr_history_get_command_dup(const unsigned long index) {
     if (history == NULL || index > history->count || index == 0) {
-        log_error("History index %lu out of range\n", index);
-        return NULL;
+        cshr_log_error("History index %lu out of range\n", index);
+        return nullptr;
     }
 
     unsigned int history_index = index;
@@ -82,11 +82,11 @@ char* get_command_from_history(const unsigned long index) {
     return strdup(command_from_history);
 }
 
-char *get_entry_from_history(const unsigned int index) {
+char *chsr_history_get_command(const unsigned int index) {
     return history->entries[index];
 }
 
-void print_history() {
+void chsr_print_history() {
     // If the history hasn't been initialized, return
     if (history == NULL) {
         return;

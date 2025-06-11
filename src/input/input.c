@@ -1,3 +1,4 @@
+#include "input.h"
 #include "private/autocomplete/autocomplete.h"
 #include "private/core/prompt.h"
 #include "private/core/terminal.h"
@@ -24,8 +25,8 @@ volatile sig_atomic_t sigint_received = 0;
 extern History *history;
 
 void init_input_buffer(InputBuffer *inputBuffer) {
-    inputBuffer->buffer = callocate(INITIAL_BUFSIZE, 1, true);
-    inputBuffer->buffer_backup = callocate(INITIAL_BUFSIZE, 1, true);
+    inputBuffer->buffer = cshr_callocate(INITIAL_BUFSIZE, 1, true);
+    inputBuffer->buffer_backup = cshr_callocate(INITIAL_BUFSIZE, 1, true);
     inputBuffer->length = 0;
     inputBuffer->cursor_position = 0;
     inputBuffer->history_index = 0;
@@ -36,11 +37,11 @@ int reallocate_input_buffer(InputBuffer *inputBuffer, unsigned int buffer_expans
     unsigned int old_buffer_size = inputBuffer->buffer_size;
     inputBuffer->buffer_size += buffer_expansion_size;
 
-    inputBuffer->buffer = reallocate_safe(inputBuffer->buffer, old_buffer_size, inputBuffer->buffer_size, false);
-    inputBuffer->buffer_backup = reallocate_safe(inputBuffer->buffer_backup, old_buffer_size, inputBuffer->buffer_size, false);
+    inputBuffer->buffer = cshr_reallocate_safe(inputBuffer->buffer, old_buffer_size, inputBuffer->buffer_size, false);
+    inputBuffer->buffer_backup = cshr_reallocate_safe(inputBuffer->buffer_backup, old_buffer_size, inputBuffer->buffer_size, false);
 
     if (!inputBuffer->buffer || !inputBuffer->buffer_backup) {
-        log_error("Reallocation of input buffer failed");
+        cshr_log_error("Reallocation of input buffer failed");
         return -1;
     }
 
@@ -127,7 +128,10 @@ void insert_into_buffer_at_cursor_position(InputBuffer *inputBuffer, char *strin
     inputBuffer->cursor_position += string_length;
 }
 
-char *read_input() {
+char *cshr_read_input() {
+    get_prompt();
+    printf("%s", prompt);
+
     InputBuffer inputBuffer;
     init_input_buffer(&inputBuffer);
 
@@ -252,7 +256,7 @@ done:
     disable_raw_mode();
     printf("\n");
 
-    char *input = allocate(inputBuffer.length + 1, false);
+    char *input = cshr_allocate(inputBuffer.length + 1, false);
     if (input != NULL) {
         memcpy(input, inputBuffer.buffer, inputBuffer.length);
         input[inputBuffer.length] = '\0';
