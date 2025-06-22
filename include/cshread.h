@@ -1,5 +1,5 @@
-#ifndef PUBLIC_AUTOCOMPLETE_H
-#define PUBLIC_AUTOCOMPLETE_H
+#ifndef PUBLIC_CSHR_H
+#define PUBLIC_CSHR_H
 
 #include "autocomplete.h"
 #include "history.h"

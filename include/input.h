@@ -6,6 +6,6 @@
 extern volatile sig_atomic_t cshr_sigint_received;
 
 // Reads input from the user
-char *cshr_read_input();
+char *cshr_read_input(char *prompt);
 
 #endif

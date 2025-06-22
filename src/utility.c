@@ -1,4 +1,3 @@
-#include "private/input/history.h"
 #include "private/utility.h"
 
 #include <stdarg.h>
@@ -28,7 +27,7 @@ noreturn void cshr_log_error_with_exit(const char *message) {
     exit(EXIT_FAILURE);
 }
 
-void *cshr_recshr_allocate(void *pointer, size_t size, bool exit) {
+void *cshr_reallocate(void *pointer, size_t size, bool exit) {
     void *reallocation_result = realloc(pointer, size);
     if (!reallocation_result) {
         free(pointer);
@@ -83,9 +82,4 @@ void *cshr_callocate(unsigned int number_of_bytes, size_t size, bool exit) {
     }
 
     return callocation_result;
-}
-
-// Wrapper function to override in testing (statically linked glibc-functions cannot be overriden in github actions?)
-ssize_t cshr_get_host_name(char *name, size_t len) {
-    return gethostname(name, len);
 }

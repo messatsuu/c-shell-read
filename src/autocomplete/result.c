@@ -18,7 +18,7 @@ void init_autocomplete_result(AutocompleteResult *autocompleteResult) {
     autocompleteResult->capacity = INITIAL_BUFSIZE;
 }
 
-void add_entry_to_autocomplete_result(AutocompleteResult *autocompleteResult, char* entry, enum AutocompleteResultEntryType entryType) {
+void add_entry_to_autocomplete_result(AutocompleteResult *autocompleteResult, char *entry, enum AutocompleteResultEntryType entryType) {
     autocompleteResult->entries[autocompleteResult->count] = cshr_allocate(sizeof(AutocompleteResultEntry), true);
 
     char *new_entry = cshr_callocate(ENTRY_MAX, 1, true);
@@ -46,7 +46,7 @@ void add_entry_to_autocomplete_result(AutocompleteResult *autocompleteResult, ch
 
 int reallocate_autocomplete_entries(AutocompleteResult *autocompleteResult, unsigned int entries_expansion_size) {
     autocompleteResult->capacity += entries_expansion_size;
-    autocompleteResult->entries = cshr_recshr_allocate(autocompleteResult->entries, autocompleteResult->capacity * sizeof(char *), false);
+    autocompleteResult->entries = cshr_reallocate(autocompleteResult->entries, autocompleteResult->capacity * sizeof(char *), false);
 
     if (!autocompleteResult->entries) {
         return -1;
@@ -150,7 +150,7 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
         // If the size of all elements for the printout is bigger than the current `buffer_size`, reallocate
         if (strlen(result_buffer) + strlen(output_color) + strlen(current_autocomplete_result) + strlen(NORMAL) + spaces_to_print + 1 >= buffer_size) {
             buffer_size += BUF_EXPANSION_SIZE_BIG;
-            result_buffer = cshr_recshr_allocate(result_buffer, buffer_size, true);
+            result_buffer = cshr_reallocate(result_buffer, buffer_size, true);
         }
 
         // Put Entry into result-string

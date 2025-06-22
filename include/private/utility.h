@@ -19,7 +19,7 @@ void cshr_log_error(const char *format, ...);
 void cshr_log_error_with_exit(const char *message);
 
 // Wrapper around realloc that exits with a message to stderr when realloc fails
-void *cshr_recshr_allocate(void *pointer, size_t size,  bool exit);
+void *cshr_reallocate(void *pointer, size_t size,  bool exit);
 
 void *cshr_reallocate_safe(void *pointer, unsigned int old_size, unsigned int new_size, bool exit);
 

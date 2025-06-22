@@ -56,7 +56,7 @@ void cleanup_input_buffer(InputBuffer *inputBuffer) {
     free(inputBuffer->buffer_backup);
 }
 
-void redraw_line(InputBuffer *inputBuffer) {
+void redraw_line(InputBuffer *inputBuffer, char *prompt) {
     // Null-terminate buffer for printf
     inputBuffer->buffer[inputBuffer->length] = '\0';
 
@@ -67,7 +67,7 @@ void redraw_line(InputBuffer *inputBuffer) {
     printf("\r");
 
     // Move to correct cursor position, only visible part of prompt
-    printf("\033[%dC", get_prompt_visible_length() + inputBuffer->cursor_position);
+    printf("\033[%dC", get_prompt_visible_length(prompt) + inputBuffer->cursor_position);
     fflush(stdout);
 }
 
@@ -108,7 +108,6 @@ void set_history_entry_to_buffer(
     inputBuffer->history_index = inputBuffer->history_index + incrementValue;
     inputBuffer->length = strlen(inputBuffer->buffer);
     inputBuffer->cursor_position = inputBuffer->length;
-    redraw_line(inputBuffer);
 }
 
 void insert_into_buffer_at_cursor_position(InputBuffer *inputBuffer, char *string, unsigned int string_length) {
@@ -128,9 +127,10 @@ void insert_into_buffer_at_cursor_position(InputBuffer *inputBuffer, char *strin
     inputBuffer->cursor_position += string_length;
 }
 
-char *cshr_read_input() {
-    get_prompt();
-    printf("%s", prompt);
+char *cshr_read_input(char *prompt) {
+    if (prompt) {
+        printf("%s", prompt);
+    }
 
     InputBuffer inputBuffer;
     init_input_buffer(&inputBuffer);
@@ -146,7 +146,7 @@ char *cshr_read_input() {
             inputBuffer.length = 0;
             inputBuffer.cursor_position = 0;
             cshr_sigint_received = 0;
-            redraw_line(&inputBuffer);
+            redraw_line(&inputBuffer, prompt);
             continue;
         }
 
@@ -249,7 +249,7 @@ char *cshr_read_input() {
                 break;
         }
 
-        redraw_line(&inputBuffer);
+        redraw_line(&inputBuffer, prompt);
     }
 
 done:
