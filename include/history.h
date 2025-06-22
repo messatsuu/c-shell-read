@@ -3,16 +3,19 @@
 
 extern int cshr_history_index;
 
-void cshr_history_init(int initial_capacity);
-
 void cshr_history_cleanup();
 
-void chsr_history_append(const char *command);
+void cshr_history_append(const char *command);
 
-char *cshr_history_get_command_dup(const unsigned int index);
+// Get command at index. Note that mutations will mutate the string in the history.
+char *cshr_history_get_entry(unsigned long index);
 
-char* chsr_history_get_command(unsigned long index);
+// Get command at index as a strdup'd string.
+char *cshr_history_get_entry_dup(unsigned int index);
 
-void chsr_print_history();
+// Set a limit on how many history entries are persisted
+void cshr_set_history_limit(unsigned int limit);
+
+void cshr_print_history();
 
 #endif
