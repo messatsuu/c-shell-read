@@ -103,8 +103,8 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
         return;
     }
 
-    unsigned int buffer_size = INITIAL_BUFSIZE_BIG;
-    char *result_buffer = cshr_callocate(buffer_size, 1, true);
+    unsigned long int buffer_size = INITIAL_BUFSIZE_BIG;
+    char *output_buffer = cshr_callocate(buffer_size, 1, true);
 
     unsigned terminal_column_count = get_terminal_columns_count();
     unsigned int longest_result_length = get_longest_autocomplete_result_length(autocompleteResult);
@@ -147,37 +147,38 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
                 break;
         }
 
-        // If the size of all elements for the printout is bigger than the current `buffer_size`, reallocate
-        if (strlen(result_buffer) + strlen(output_color) + strlen(current_autocomplete_result) + strlen(NORMAL) + spaces_to_print + 1 >= buffer_size) {
-            buffer_size += BUF_EXPANSION_SIZE_BIG;
-            result_buffer = cshr_reallocate(result_buffer, buffer_size, true);
+        // If the size of all elements to add for the printout is bigger than the current `buffer_size`, reallocate
+        unsigned long int new_buffer_size = strlen(output_buffer) + strlen(output_color) + strlen(current_autocomplete_result) + strlen(NORMAL) + spaces_to_print + 1;
+        if (new_buffer_size >= buffer_size) {
+            output_buffer = cshr_reallocate_safe(output_buffer, buffer_size, new_buffer_size + BUF_EXPANSION_SIZE_BIG, true);
+            buffer_size = new_buffer_size + BUF_EXPANSION_SIZE_BIG;
         }
 
-        // Put Entry into result-string
-        memcpy(result_buffer + index, output_color, strlen(output_color));
+        // Put Entry into output_buffer, e.g. add entry-color, result-string and `NORMAL` color to output_buffer
+        memcpy(output_buffer + index, output_color, strlen(output_color));
         index += strlen(output_color);
-        memcpy(result_buffer + index, current_autocomplete_result, strlen(current_autocomplete_result));
+        memcpy(output_buffer + index, current_autocomplete_result, strlen(current_autocomplete_result));
         index += strlen(current_autocomplete_result);
-        memcpy(result_buffer + index, NORMAL, strlen(NORMAL));
+        memcpy(output_buffer + index, NORMAL, strlen(NORMAL));
         index += strlen(NORMAL);
 
         if (i < autocompleteResult->count - 1) {
             for (int j = 0; j < spaces_to_print; j++) {
-                memcpy(result_buffer + index, " ", 1);
+                memcpy(output_buffer + index, " ", 1);
                 index++;
             }
 
             if (((i + 1) % entries_per_row) == 0) {
                 char *newline_sequence = "\n\r\x1b[2K";
-                memcpy(result_buffer + index, newline_sequence, strlen(newline_sequence));
+                memcpy(output_buffer + index, newline_sequence, strlen(newline_sequence));
                 index += strlen(newline_sequence);
             }
         }
     }
 
-    result_buffer[index] = '\0';
+    output_buffer[index] = '\0';
 
-    print_under_input(result_buffer);
-    free(result_buffer);
+    print_under_input(output_buffer);
+    free(output_buffer);
 }
 
