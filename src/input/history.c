@@ -1,4 +1,5 @@
 #include "private/utility.h"
+#include "private/input/history.h"
 
 #include <limits.h>
 #include <stdio.h>
@@ -9,27 +10,19 @@
 
 #define HISTORY_BUFFER_SIZE 20
 
-typedef struct {
-    char **entries; // Array of strings (dynamically allocated)
-    unsigned int count;      // Number of current entries
-    unsigned int capacity;   // Number of entries until reallocation is needed
-    unsigned int capacity_limit;   // Max number of entries until oldest entry get deallocated
-} History;
-
 // Declare a global variable to store history
 History *history = NULL;
 
-int cshr_history_index = 0;
-
 void history_init(int initial_capacity) {
     history = cshr_allocate(sizeof(History), true);
-    history->entries = (char **)cshr_allocate(initial_capacity * sizeof(char *), true);
+    history->history_entries = (HistoryEntry **)cshr_allocate(initial_capacity * sizeof(HistoryEntry *), true);
     history->count = 0;
+    history->current_index = 1;
     history->capacity = initial_capacity;
     // Set the default max to around 4'294'967'295
     history->capacity_limit = UINT_MAX;
 
-    if (!history->entries) {
+    if (!history->history_entries) {
         cshr_log_error_with_exit("History Allocation Error");
     }
 }
@@ -48,10 +41,11 @@ void cshr_history_cleanup() {
     }
 
     for (int i = 0; i < history->count; i++) {
-        free(history->entries[i]);
+        free(history->history_entries[i]->entry);
+        free(history->history_entries[i]);
     }
 
-    free(history->entries);
+    free(history->history_entries);
     free(history);
 }
 
@@ -59,50 +53,66 @@ void cshr_history_append(const char *command) {
     if (history == NULL) {
         // On first call, we initialize the history-struct
         history_init(HISTORY_BUFFER_SIZE);
-    } else if (history->count > 0 && strcmp(history->entries[history->count - 1], command) == 0) {
+    } else if (history->count > 0 && strcmp(history->history_entries[history->count - 1]->entry, command) == 0) {
         // Do not append to history if the previous entry is the same as the current one
         return;
     }
 
     // If we reached the limit for the capacity, free the first entry and move all entries one to the left
     if (history->count >= history->capacity_limit) {
-        free(history->entries[0]);
+        free(history->history_entries[0]->entry);
+        free(history->history_entries[0]);
         // clang throws warnings when passing multi-level pointers (e.g. (char **)) as a (void *), which is what memmove() expects.
         // We cast it manually to communicate intent.
-        memmove(history->entries, history->entries + 1, (history->count - 1) * sizeof(char *));
+        memmove(history->history_entries, history->history_entries + 1, (history->count - 1) * sizeof(HistoryEntry *));
         history->count--;
     }
 
     // If we reach the max of the currently allocated capacity, reallocate the the entries buffer
     if (history->count >= history->capacity) {
         history->capacity += HISTORY_BUFFER_SIZE;
-        history->entries = (char **)cshr_reallocate(history->entries, (history->capacity) * sizeof(char*), true);
+        history->history_entries = (HistoryEntry **)cshr_reallocate(history->history_entries, (history->capacity) * sizeof(HistoryEntry *), true);
     }
 
-    // TODO: instead of using strdup, make sure that the original command is not
-    history->entries[history->count] = strdup(command);
-    if (!history->entries[history->count]) {
+    HistoryEntry *new_entry = cshr_allocate(sizeof(HistoryEntry), true);
+    new_entry->entry = strdup(command);
+    new_entry->index = history->current_index;
+    history->history_entries[history->count] = new_entry;
+
+    if (!new_entry->entry) {
         cshr_log_error_with_exit("Copying command string to buffer failed");
     }
 
     history->count++;
+    history->current_index++;
 }
 
 char *cshr_history_get_entry(const unsigned int index) {
-    if (history == NULL || index > history->count || index == 0) {
+    if (history == NULL  || index == 0) {
         cshr_log_error("History index %lu out of range\n", index);
         return nullptr;
     }
 
-    unsigned int history_index = index;
-    history_index--;
+    char *entry = nullptr;
 
-    return history->entries[history_index];
+    for (int i = 0; i < history->count; i++) {
+        if (history->history_entries[i]->index == index) {
+            entry = history->history_entries[i]->entry;
+            break;
+        }
+    }
+
+    if (entry == nullptr) {
+        cshr_log_error("History index %lu out of range\n", index);
+    }
+
+    return entry;
 }
 
 char *cshr_history_get_entry_dup(const unsigned long index) {
     // we need to Duplicate the string, since making operations on it would change it in the history
-    return strdup(cshr_history_get_entry(index));
+    char *entry = cshr_history_get_entry(index);
+    return entry == NULL ? entry : strdup(entry);
 }
 
 void cshr_print_history() {
@@ -112,6 +122,7 @@ void cshr_print_history() {
     }
 
     for (int i = 0; i < history->count; i++) {
-        printf("%d  %s\n", i + 1, history->entries[i]);
+        HistoryEntry *history_entry = history->history_entries[i];
+        printf("%d  %s\n", history_entry->index, history_entry->entry);
     }
 }

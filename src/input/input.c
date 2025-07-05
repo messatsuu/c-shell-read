@@ -96,13 +96,13 @@ void set_history_entry_to_buffer(
         strncpy(inputBuffer->buffer, inputBuffer->buffer_backup, inputBuffer->buffer_size);
     } else {
         // Otherwise we copy the history entry to the buffer and reallocate if needed
-        int history_entry_length = strlen(history->entries[new_history_index]);
+        unsigned int history_entry_length = strlen(history->history_entries[new_history_index]->entry);
         if (history_entry_length + 1 >= inputBuffer->buffer_size) {
             if (reallocate_input_buffer(inputBuffer, history_entry_length) == -1) {
                 return;
             };
         }
-        strncpy(inputBuffer->buffer, history->entries[new_history_index], inputBuffer->buffer_size);
+        strncpy(inputBuffer->buffer, history->history_entries[new_history_index]->entry, inputBuffer->buffer_size);
     }
 
     inputBuffer->history_index = inputBuffer->history_index + incrementValue;

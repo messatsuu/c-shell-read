@@ -1,8 +1,6 @@
 #ifndef PUBLIC_HISTORY_H
 #define PUBLIC_HISTORY_H
 
-extern int cshr_history_index;
-
 void cshr_history_cleanup();
 
 void cshr_history_append(const char *command);
