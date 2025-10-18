@@ -227,7 +227,7 @@ char *cshr_read_input(char *prompt) {
                 move_cursor_to_end(&inputBuffer);
                 break;
             case 12: // Ctrl+L
-                printf("\e[1;1H\e[2J");
+                printf("\x1B[1;1H\x1B[2J");
                 break;
             case 21: // Ctrl+U
                 delete_cursor_to_start(&inputBuffer);

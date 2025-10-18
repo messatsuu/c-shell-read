@@ -133,17 +133,17 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
 
     for (size_t i = 0; i < autocompleteResult->count; i++) {
         // The Color to output in
-        char *output_color = WHITE;
+        char *output_color = (char *)WHITE;
         char *current_autocomplete_result = autocompleteResult->entries[i]->entry;
         unsigned int spaces_to_print = longest_result_length - strlen(current_autocomplete_result) + spaces_per_row;
 
         // additional text to render with autocomplete result
         switch (autocompleteResult->entries[i]->resultEntryType) {
             case RESULT_ENTRY_TYPE_DIR:
-                output_color = BLUE;
+                output_color =  (char *)BLUE;
                 break;
             case RESULT_ENTRY_TYPE_FILE:
-                output_color = WHITE;
+                output_color =  (char *)WHITE;
                 break;
         }
 
@@ -169,7 +169,7 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
             }
 
             if (((i + 1) % entries_per_row) == 0) {
-                char *newline_sequence = "\n\r\x1b[2K";
+                char *newline_sequence = (char *)"\n\r\x1b[2K";
                 memcpy(output_buffer + index, newline_sequence, strlen(newline_sequence));
                 index += strlen(newline_sequence);
             }

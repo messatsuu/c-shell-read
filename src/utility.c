@@ -8,6 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
+__attribute__((format(printf, 1, 2)))
 void cshr_log_error(const char *format, ...) {
     va_list args;
     va_start(args, format);
@@ -23,7 +24,7 @@ void cshr_log_error(const char *format, ...) {
 }
 
 noreturn void cshr_log_error_with_exit(const char *message) {
-    cshr_log_error(message);
+    cshr_log_error("%s", message);
     exit(EXIT_FAILURE);
 }
 
