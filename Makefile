@@ -20,7 +20,7 @@ ifeq ($(MODE),debug)
 	CFLAGS := -std=c23 -g -O0 -I$(INC_DIR) -D_POSIX_C_SOURCE=200809L
 else
 	CFLAGS = -std=c23 -Wall -Werror -I$(INC_DIR) -D_POSIX_C_SOURCE=200809L \
-			-fsanitize=address,undefined -Wpedantic -Wformat=2 -Wno-unused-parameter \
+			-Wpedantic -Wformat=2 -Wno-unused-parameter \
 			-Wshadow -Wwrite-strings -Wstrict-prototypes -Wold-style-definition \
 			-Wredundant-decls -Wnested-externs -Wmissing-include-dirs
 endif
