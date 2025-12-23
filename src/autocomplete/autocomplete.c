@@ -2,7 +2,6 @@
 
 #include "private/autocomplete/autocomplete.h"
 #include "private/autocomplete/autocomplete_result.h"
-#include "private/core/terminal.h"
 #include "private/utility.h"
 
 #include <dirent.h>
@@ -10,8 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void set_autocomplete_entries_directory(AutocompleteResult *autocompleteResult, char *path)
-{
+void set_autocomplete_entries_directory(AutocompleteResult *autocompleteResult, char *path) {
     DIR *directory = opendir(path); // open the path
     if (directory == NULL) {
         return;
@@ -26,6 +24,7 @@ void set_autocomplete_entries_directory(AutocompleteResult *autocompleteResult, 
         }
         if (autocompleteResult->count >= autocompleteResult->capacity) {
             if (reallocate_autocomplete_entries(autocompleteResult, BUF_EXPANSION_SIZE) == -1) {
+                closedir(directory);
                 return;
             }
         }
@@ -37,7 +36,7 @@ void set_autocomplete_entries_directory(AutocompleteResult *autocompleteResult, 
             entryType = RESULT_ENTRY_TYPE_FILE;
         }
 
-        add_entry_to_autocomplete_result(autocompleteResult, entry->d_name, entryType);
+        autocomplete_result_add_entry(autocompleteResult, entry->d_name, entryType);
     }
 
     // Sort entries by type
@@ -52,13 +51,13 @@ void autocomplete_path(AutocompleteResult *autocompleteResult) {
     char *path = cshr_callocate(PATH_MAX, 1, true);
 
     if (last_slash != NULL) {
-        unsigned int slash_position = last_slash - autocompleteResult->search_term + 1; // include the slash
-        strncpy(path, autocompleteResult->search_term, slash_position);
-        path[slash_position] = '\0'; // null-terminate manually
+        unsigned int last_slash_position = last_slash - autocompleteResult->search_term + 1; // include the slash
+        strncpy(path, autocompleteResult->search_term, last_slash_position);
+        path[last_slash_position] = '\0';
 
-        unsigned int new_search_term_length = autocompleteResult->search_term_length - slash_position;
+        unsigned int new_search_term_length = autocompleteResult->search_term_length - last_slash_position;
         // If a path is found, we need to update the search-term to search for a specific directory instead (e.g. "/var/cac" => "cac")
-        memmove(&autocompleteResult->search_term[0], &autocompleteResult->search_term[slash_position], new_search_term_length);
+        memmove(&autocompleteResult->search_term[0], &autocompleteResult->search_term[last_slash_position], new_search_term_length);
         autocompleteResult->search_term_length = new_search_term_length;
         autocompleteResult->search_term[autocompleteResult->search_term_length] = '\0';
     } else {
@@ -77,13 +76,12 @@ void set_search_term_from_input(InputBuffer *inputBuffer, AutocompleteResult *au
     before_cursor_buffer[inputBuffer->cursor_position] = '\0';
 
     // Find occurence of start of search-term (' ' + 1)
-    char *last_terminator = strrchr(before_cursor_buffer, ' ');
-
-    if (last_terminator != NULL) {
-        word_start_position = last_terminator - before_cursor_buffer + 1; // +1 to move after the terminator
+    char *last_space = strrchr(before_cursor_buffer, ' ');
+    if (last_space != NULL) {
+        word_start_position = last_space - before_cursor_buffer + 1; // +1 to move after the space
     }
 
-    autocompleteResult->search_term_length = (int)inputBuffer->cursor_position - (int)word_start_position;
+    autocompleteResult->search_term_length = inputBuffer->cursor_position - (int)word_start_position;
     autocompleteResult->search_term = cshr_allocate(autocompleteResult->search_term_length + 1, true);
     memcpy(autocompleteResult->search_term, &inputBuffer->buffer[word_start_position], autocompleteResult->search_term_length);
     autocompleteResult->search_term[autocompleteResult->search_term_length] = '\0';

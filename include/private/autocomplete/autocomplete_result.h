@@ -24,7 +24,7 @@ typedef struct {
 
 void init_autocomplete_result(AutocompleteResult *autocompleteResult);
 
-void add_entry_to_autocomplete_result(AutocompleteResult *autocompleteResult, char *entry, enum AutocompleteResultEntryType entryType);
+void autocomplete_result_add_entry(AutocompleteResult *autocompleteResult, char *entry, enum AutocompleteResultEntryType entryType);
 
 int reallocate_autocomplete_entries(AutocompleteResult *autocompleteResult, unsigned int entries_expansion_size);
 

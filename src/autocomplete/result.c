@@ -18,7 +18,7 @@ void init_autocomplete_result(AutocompleteResult *autocompleteResult) {
     autocompleteResult->capacity = INITIAL_BUFSIZE;
 }
 
-void add_entry_to_autocomplete_result(AutocompleteResult *autocompleteResult, char *entry, enum AutocompleteResultEntryType entryType) {
+void autocomplete_result_add_entry(AutocompleteResult *autocompleteResult, char *entry, enum AutocompleteResultEntryType entryType) {
     autocompleteResult->entries[autocompleteResult->count] = cshr_allocate(sizeof(AutocompleteResultEntry), true);
 
     char *new_entry = cshr_callocate(ENTRY_MAX, 1, true);
@@ -46,7 +46,7 @@ void add_entry_to_autocomplete_result(AutocompleteResult *autocompleteResult, ch
 
 int reallocate_autocomplete_entries(AutocompleteResult *autocompleteResult, unsigned int entries_expansion_size) {
     autocompleteResult->capacity += entries_expansion_size;
-    autocompleteResult->entries = cshr_reallocate(autocompleteResult->entries, autocompleteResult->capacity * sizeof(char *), false);
+    autocompleteResult->entries = cshr_reallocate(autocompleteResult->entries, autocompleteResult->capacity * sizeof(AutocompleteResultEntry *), false);
 
     if (!autocompleteResult->entries) {
         return -1;
@@ -138,6 +138,7 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
         unsigned int spaces_to_print = longest_result_length - strlen(current_autocomplete_result) + spaces_per_row;
 
         // additional text to render with autocomplete result
+        // TODO: find a way to pass colors with custom completion-results (without embedding colors into the results)
         switch (autocompleteResult->entries[i]->resultEntryType) {
             case RESULT_ENTRY_TYPE_DIR:
                 output_color =  (char *)BLUE;
