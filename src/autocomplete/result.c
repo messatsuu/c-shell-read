@@ -3,6 +3,7 @@
 #include "private/autocomplete/autocomplete_result.h"
 #include "private/utility.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -109,6 +110,11 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
     unsigned terminal_column_count = get_terminal_columns_count();
     unsigned int longest_result_length = get_longest_autocomplete_result_length(autocompleteResult);
 
+    if (longest_result_length == 0) {
+        longest_result_length = 1;
+        printf("error in autocomplete-result triggered!!");
+    }
+
     // If there aren't that many results, we don't want to use the whole screen width
     // TODO: might cause issues with longer file-names
     if (autocompleteResult->count < (terminal_column_count / 2)) {
@@ -116,16 +122,18 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
     }
 
     unsigned int entries_per_row = terminal_column_count / longest_result_length;
-    unsigned int spaces_per_row = (terminal_column_count - (longest_result_length * entries_per_row)) / entries_per_row;
+    unsigned int spaces_per_row = 0;
 
-    if (entries_per_row == 0) {
-        entries_per_row = 1;
-        spaces_per_row = 1;
-    } else {
+    if (entries_per_row != 0) {
+        spaces_per_row = (terminal_column_count - (longest_result_length * entries_per_row)) / entries_per_row;
+
         while (spaces_per_row == 0 && entries_per_row > 1) {
             entries_per_row--;
             spaces_per_row = (terminal_column_count - (longest_result_length * entries_per_row)) / entries_per_row;
         }
+    } else {
+        entries_per_row = 1;
+        spaces_per_row = 1;
     }
 
     // using memcpy with manually tracked index to avoid using strcat (slow due to rescan of whole buffer)

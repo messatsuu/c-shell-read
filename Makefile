@@ -41,7 +41,7 @@ build/%.o: src/%.c
 
 # Clean build artifacts
 clean:
-	rm build -rf
+	rm build -r
 
 # ALIASES
 b: build
