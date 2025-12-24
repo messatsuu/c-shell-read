@@ -115,14 +115,17 @@ char *cshr_history_get_entry_dup(const unsigned long index) {
     return entry == NULL ? entry : strdup(entry);
 }
 
-void cshr_print_history() {
+int cshr_print_history() {
     // If the history hasn't been initialized, return
     if (history == NULL) {
-        return;
+        printf("no history to print.");
+        return 0;
     }
 
     for (int i = 0; i < history->count; i++) {
         HistoryEntry *history_entry = history->history_entries[i];
         printf("%d  %s\n", history_entry->index, history_entry->entry);
     }
+
+    return 0;
 }

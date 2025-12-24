@@ -14,6 +14,6 @@ char *cshr_history_get_entry_dup(unsigned int index);
 // Set a limit on how many history entries are persisted
 void cshr_set_history_limit(unsigned int limit);
 
-void cshr_print_history();
+int cshr_print_history();
 
 #endif
