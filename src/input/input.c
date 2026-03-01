@@ -162,6 +162,7 @@ char *cshr_read_input(char *prompt) {
                 return NULL;
 
             case 10: // Enter
+            case 13: // CR (\r)
                 inputBuffer.buffer[inputBuffer.length] = '\0';
                 goto done;
 

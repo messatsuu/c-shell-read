@@ -118,7 +118,7 @@ char *cshr_history_get_entry_dup(const unsigned long index) {
 int cshr_print_history() {
     // If the history hasn't been initialized, return
     if (history == NULL) {
-        printf("no history to print.");
+        printf("no history to print.\n");
         return 0;
     }
 
