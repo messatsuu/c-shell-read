@@ -1,17 +1,15 @@
 #ifndef AUTOCOMPLETE_RESULTH_H
 #define AUTOCOMPLETE_RESULTH_H
 
-#include "private/input/input.h"
 #define ENTRY_MAX 4096
 
-enum AutocompleteResultEntryType {
-    RESULT_ENTRY_TYPE_DIR,
-    RESULT_ENTRY_TYPE_FILE
-};
+#define AUTOCOMPLETE_COLOR_BLUE "\033[0;34m"
+#define AUTOCOMPLETE_COLOR_WHITE "\033[37m"
+#define AUTOCOMPLETE_COLOR_NORMAL "\033[0m"
 
 typedef struct {
     char *entry;
-    enum AutocompleteResultEntryType resultEntryType;
+    char *color;
 } AutocompleteResultEntry;
 
 typedef struct {
@@ -24,13 +22,11 @@ typedef struct {
 
 void init_autocomplete_result(AutocompleteResult *autocompleteResult);
 
-void autocomplete_result_add_entry(AutocompleteResult *autocompleteResult, char *entry, enum AutocompleteResultEntryType entryType);
+int autocomplete_result_add_entry(AutocompleteResult *autocompleteResult, char *entry, char* color);
 
 int reallocate_autocomplete_entries(AutocompleteResult *autocompleteResult, unsigned int entries_expansion_size);
 
 void cleanup_autocomplete_result(AutocompleteResult *autocompleteResult);
-
-int sort_autocomplete_result_entries(const void *a, const void *b);
 
 void print_autocomplete_entries(AutocompleteResult *autocompleteResult);
 

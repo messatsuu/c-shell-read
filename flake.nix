@@ -20,14 +20,16 @@
         buildInputs = [ pkgs.clang ];
 
         buildPhase = ''
+          make clean
           make build
+          MODE=debug make build
         '';
 
         installPhase = ''
           mkdir -p $out/include/cshread
           cp -r include/*.h $out/include/cshread
           mkdir -p $out/lib
-          cp build/libcshread.a $out/lib/
+          cp build/*.a $out/lib/
         '';
       };
 

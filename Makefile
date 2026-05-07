@@ -17,12 +17,14 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC_FILES))
 # FLAGS
 MODE ?= release
 ifeq ($(MODE),debug)
-	CFLAGS := -std=c23 -g -O0 -I$(INC_DIR) -D_POSIX_C_SOURCE=200809L
+$(info DEBUG MODE)
+CFLAGS := -std=c23 -g -O0 -I$(INC_DIR) -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE
+TARGET = build/libcshread_debug.a
 else
-	CFLAGS = -std=c23 -Wall -Werror -I$(INC_DIR) -D_POSIX_C_SOURCE=200809L \
-			-Wpedantic -Wformat=2 -Wno-unused-parameter \
-			-Wshadow -Wwrite-strings -Wstrict-prototypes -Wold-style-definition \
-			-Wredundant-decls -Wnested-externs -Wmissing-include-dirs
+CFLAGS = -std=c23 -Wall -Werror -I$(INC_DIR) -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE \
+	-Wpedantic -Wformat=2 -Wno-unused-parameter \
+	-Wshadow -Wwrite-strings -Wstrict-prototypes -Wold-style-definition \
+	-Wredundant-decls -Wnested-externs -Wmissing-include-dirs
 endif
 
 
@@ -41,7 +43,7 @@ build/%.o: src/%.c
 
 # Clean build artifacts
 clean:
-	rm build -r
+	rm ./build -r
 
 # ALIASES
 b: build

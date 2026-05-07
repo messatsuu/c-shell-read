@@ -8,41 +8,26 @@
 #include <string.h>
 #include <limits.h>
 
-#define BLUE "\033[0;34m"
-#define GREEN "\033[32m"
-#define WHITE "\033[37m"
-#define NORMAL "\033[0m"
-
 void init_autocomplete_result(AutocompleteResult *autocompleteResult) {
     autocompleteResult->entries = cshr_allocate(INITIAL_BUFSIZE * sizeof(AutocompleteResultEntry *), true);
     autocompleteResult->count = 0;
     autocompleteResult->capacity = INITIAL_BUFSIZE;
 }
 
-void autocomplete_result_add_entry(AutocompleteResult *autocompleteResult, char *entry, enum AutocompleteResultEntryType entryType) {
+int autocomplete_result_add_entry(AutocompleteResult *autocompleteResult, char *entry, char* color) {
     autocompleteResult->entries[autocompleteResult->count] = cshr_allocate(sizeof(AutocompleteResultEntry), true);
 
-    char *new_entry = cshr_callocate(ENTRY_MAX, 1, true);
-    strncpy(new_entry, entry, strlen(entry));
-    switch (entryType) {
-        case RESULT_ENTRY_TYPE_DIR: {
-            // Add a slash to result entry if type dir
-            new_entry[strlen(new_entry)] = '/';
-            new_entry[strlen(new_entry)] = '\0';
-            break;
+    if (autocompleteResult->count + 1 >= autocompleteResult->capacity) {
+        if (reallocate_autocomplete_entries(autocompleteResult, BUF_EXPANSION_SIZE) == -1) {
+            return -1;
         }
-        case RESULT_ENTRY_TYPE_FILE: {
-            // Add a space to result entry if type file
-            new_entry[strlen(new_entry)] = ' ';
-            new_entry[strlen(new_entry)] = '\0';
-            break;
-        }
-        default:
-            break;
     }
-    autocompleteResult->entries[autocompleteResult->count]->entry = new_entry;
-    autocompleteResult->entries[autocompleteResult->count]->resultEntryType = entryType;
+
+    autocompleteResult->entries[autocompleteResult->count]->entry = strdup(entry);
+    autocompleteResult->entries[autocompleteResult->count]->color = strdup(color);
     autocompleteResult->count++;
+
+    return 0;
 }
 
 int reallocate_autocomplete_entries(AutocompleteResult *autocompleteResult, unsigned int entries_expansion_size) {
@@ -63,6 +48,7 @@ void cleanup_autocomplete_result(AutocompleteResult *autocompleteResult) {
 
     for (int i = 0; i < autocompleteResult->count; i++) {
         free(autocompleteResult->entries[i]->entry);
+        free(autocompleteResult->entries[i]->color);
         free(autocompleteResult->entries[i]);
     }
 
@@ -81,22 +67,6 @@ int get_longest_autocomplete_result_length(AutocompleteResult *autocompleteResul
     }
 
     return longest_result_length;
-}
-
-int sort_autocomplete_result_entries(const void *a, const void *b) {
-    AutocompleteResultEntry *entry1 = *(AutocompleteResultEntry **)a;
-    AutocompleteResultEntry *entry2 = *(AutocompleteResultEntry **)b;
-
-    // Sort directories first
-    if (entry1->resultEntryType == RESULT_ENTRY_TYPE_DIR && entry2->resultEntryType != RESULT_ENTRY_TYPE_DIR) {
-        return -1;
-    }
-    if (entry1->resultEntryType != RESULT_ENTRY_TYPE_DIR && entry2->resultEntryType == RESULT_ENTRY_TYPE_DIR) {
-        return 1;
-    }
-
-    // Sort alphabetically
-    return strcmp(entry1->entry, entry2->entry);
 }
 
 void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
@@ -141,23 +111,12 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
 
     for (size_t i = 0; i < autocompleteResult->count; i++) {
         // The Color to output in
-        char *output_color = (char *)WHITE;
-        char *current_autocomplete_result = autocompleteResult->entries[i]->entry;
-        unsigned int spaces_to_print = longest_result_length - strlen(current_autocomplete_result) + spaces_per_row;
-
-        // additional text to render with autocomplete result
-        // TODO: find a way to pass colors with custom completion-results (without embedding colors into the results)
-        switch (autocompleteResult->entries[i]->resultEntryType) {
-            case RESULT_ENTRY_TYPE_DIR:
-                output_color =  (char *)BLUE;
-                break;
-            case RESULT_ENTRY_TYPE_FILE:
-                output_color =  (char *)WHITE;
-                break;
-        }
+        char *output_color = autocompleteResult->entries[i]->color;
+        char *entry_string = autocompleteResult->entries[i]->entry;
+        unsigned int spaces_to_print = longest_result_length - strlen(entry_string) + spaces_per_row;
 
         // If the size of all elements to add for the printout is bigger than the current `buffer_size`, reallocate
-        unsigned long int new_buffer_size = strlen(output_buffer) + strlen(output_color) + strlen(current_autocomplete_result) + strlen(NORMAL) + spaces_to_print + 1;
+        unsigned long int new_buffer_size = strlen(output_buffer) + strlen(output_color) + strlen(entry_string) + strlen(AUTOCOMPLETE_COLOR_NORMAL) + spaces_to_print + 1;
         if (new_buffer_size >= buffer_size) {
             output_buffer = cshr_reallocate_safe(output_buffer, buffer_size, new_buffer_size + BUF_EXPANSION_SIZE_BIG, true);
             buffer_size = new_buffer_size + BUF_EXPANSION_SIZE_BIG;
@@ -166,10 +125,10 @@ void print_autocomplete_entries(AutocompleteResult *autocompleteResult) {
         // Put Entry into output_buffer, e.g. add entry-color, result-string and `NORMAL` color to output_buffer
         memcpy(output_buffer + index, output_color, strlen(output_color));
         index += strlen(output_color);
-        memcpy(output_buffer + index, current_autocomplete_result, strlen(current_autocomplete_result));
-        index += strlen(current_autocomplete_result);
-        memcpy(output_buffer + index, NORMAL, strlen(NORMAL));
-        index += strlen(NORMAL);
+        memcpy(output_buffer + index, entry_string, strlen(entry_string));
+        index += strlen(entry_string);
+        memcpy(output_buffer + index, AUTOCOMPLETE_COLOR_NORMAL, strlen(AUTOCOMPLETE_COLOR_NORMAL));
+        index += strlen(AUTOCOMPLETE_COLOR_NORMAL);
 
         if (i < autocompleteResult->count - 1) {
             for (int j = 0; j < spaces_to_print; j++) {
